@@ -1,7 +1,7 @@
 import spidev
 import RPi.GPIO as GPIO
-import time
-import font
+import time, pprint
+import includes.font as font
 from PIL import Image
 
 # Global variables
@@ -12,6 +12,7 @@ dummy_line  = [0x3a, 0x1a] # 4 dummy line per gate
 gate_time   = [0x3b, 0x08] # 2us per line
 ram_data_entry_mode = [0x11, 0x01] # Ram data entry mode
 wbuffer = [0 for i in range(5000)]
+pp = pprint.PrettyPrinter(indent=4)
 
 # Pin definitions
 RST = 17
@@ -67,7 +68,7 @@ class Epd(object):
       raise "Unknown Waveshare Display"
 
     global gdo_control
-    gdo_control = [0x01, (self._yDot-1)%256, (self._yDot-1)/256, 0x00]
+    gdo_control = [0x01, (self._yDot-1)%256, int((self._yDot-1)/256), 0x00]
 
     # Initialize pins
     GPIO.setmode(GPIO.BCM)
@@ -123,11 +124,9 @@ class Epd(object):
 
     # The first byte is written with the command value
     self._spi.writebytes([value[0]])
-    GPIO.output(DC, GPIO.HIGH)
 
-    for i in range(0, len(value)-1):
-      data = value[i+1]
-      self._spi.writebytes([data])
+    GPIO.output(DC, GPIO.HIGH)
+    self._spi.writebytes(value[1:])
 
   def _writeDisplayRam(self, xsize, ysize, data):
     if xsize % 8 != 0:
@@ -139,13 +138,13 @@ class Epd(object):
     self._spi.writebytes([0x24])
     GPIO.output(DC, GPIO.HIGH)
 
-    size = xsize * ysize
+    size = int(xsize * ysize)
     if not isinstance(data, list):
       data = [data] * size
 
     # SPI buffer size default: 4096 bytes
     i = 0
-    for i in range(0, size/4096):
+    for i in range(0, int(size/4096)):
       self._spi.writebytes(data[i:i+4096])
       i += 4096
     self._spi.writebytes(data[i:size])
@@ -183,8 +182,8 @@ class Epd(object):
     # X-source area, Y-gage area
     xdot = self._xDot-1
     ydot = self._yDot-1
-    self._setRamArea(0x00, xdot/8, ydot%256, ydot/256, 0x00, 0x00)
-    self._setRamPointer(0x00, ydot%256, ydot/256) # set ram
+    self._setRamArea(0x00, int(xdot/8), ydot%256, int(ydot/256), 0x00, 0x00)
+    self._setRamPointer(0x00, ydot%256, int(ydot/256)) # set ram
 
   def _update(self):
     self._writeCmdP1(0x22, 0xc7)
@@ -207,16 +206,16 @@ class Epd(object):
     self._powerOn()
 
   def _displayFull(self, buffer):
-    self._setRamPointer(0x00, (self._yDot-1)%256, (self._yDot-1)/256)
+    self._setRamPointer(0x00, (self._yDot-1)%256, int((self._yDot-1)/256))
     self._writeDisplayRam(self._xDot, self._yDot, buffer)
     self._update()
 
   def _displayPart(self, xstart, xend, ystart, yend, buffer):
-    self._partDisplay(xstart/8, xend/8, yend%256, yend/256, ystart%256, ystart/256)
+    self._partDisplay(int(xstart/8), int(xend/8), yend%256, int(yend/256), ystart%256, int(ystart/256))
     self._writeDisplayRam(xend-xstart, yend-ystart+1, buffer)
     self._updatePart()
     time.sleep(0.5)
-    self._partDisplay(xstart/8, xend/8, yend%256, yend/256, ystart%256, ystart/256)
+    self._partDisplay(int(xstart/8), int(xend/8), yend%256, int(yend/256), ystart%256, int(ystart/256))
     self._writeDisplayRam(xend-xstart, yend-ystart+1, buffer)
 
   # Public methods start here
@@ -316,8 +315,8 @@ class Epd(object):
     The sample image is 32 * 32
   """
   def showImage(self, xstart, ystart, buffer, xsize, ysize):
-    xaddr = xstart * 8
-    yaddr = ystart * 8
+    xaddr = int(xstart) * 8
+    yaddr = int(ystart) * 8
     self._displayPart(yaddr, yaddr+xsize-1, self._yDot-ysize-xaddr,
       self._yDot-xaddr-1, buffer)
 

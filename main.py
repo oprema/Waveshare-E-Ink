@@ -1,9 +1,9 @@
 import time
 import spidev as SPI
 import datetime
-import waveshare as logo
-from epd import Epd
-from progressbar import ProgressBar
+import includes.waveshare as logo
+from includes.epd import Epd
+from includes.progressbar import ProgressBar
 
 # Possible displays
 DISPLAY_TYPE = "EPD_2X9"
@@ -77,11 +77,11 @@ time.sleep(2)
 print('--> Show strings')
 display.showString(0, 10, "WELCOME EPD", "Font16")
 display.showString(0, 26, "I am an electronic paper display", "Font12")
-time.sleep(2)
+time.sleep(1)
 
 # Progress bar
 print('--> Show progress bar')
-progress = ProgressBar(display, 9)
-for i in range(0, 9):
+progress = ProgressBar(display, 10)
+for i in range(0, 10):
   progress.showProgress(i)
 

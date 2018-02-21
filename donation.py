@@ -1,14 +1,12 @@
 from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
 import spidev as SPI
-from epd import Epd
+from includes.epd import Epd
+from includes.icon import Icon
+from includes.text import Text
 import os, time
 
 WHITE = 1
 BLACK = 0
-FONT_FILE = '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf'
-FONT_SIZE = 28
 DISPLAY_TYPE = 'EPD_2X9'
 
 def main():
@@ -18,33 +16,39 @@ def main():
   spi = SPI.SpiDev(bus, device)
   display = Epd(spi, DISPLAY_TYPE)
 
-  print('--> Init and clear full screen')
-  display.clearDisplayPart()
+  print()
+  print("Please consider a donation if you like the software!")
+  print("----------------------------------------------------")
+  print("Bitcoin: 18U7Ci1wSuMXDJbgkKJwVLK9cs52ZtzL16")
+  print("Ether:   0x0F24D31a3a632F4205CBe8025cc13e86ff80a48e")
+  print("or Iota: KYDFCQTDJCTLBIJWNT9UIXCN9SXHHSVCT9WDCIZWERJMCPDNZLWVIKOMYSGUVJLRE9CACQPOMZROSARBWYWPPXHHRX")
 
-  image = Image.new('1', display.size, WHITE)
-  icon_file = "./qrcode.png"
-  icon = Image.open(icon_file).convert('RGBA')
-  icon = icon.transpose(Image.FLIP_LEFT_RIGHT).transpose(Image.ROTATE_90)
-  print(list(icon.getdata()))
-  #print([True if x==0 else False for x in list(icon.getdata())])
+  for coin in ['btc', 'eth']:
+    display.clearDisplayPart()
 
-  width, height = icon.size
-  xstart, ystart = 14, 14
-  image.paste(icon, (xstart, ystart, xstart+width, ystart+height), mask=icon)
-  print("--> Show PNG: %s (size: %d x %d)" % (icon_file, width, height))
+    # display width and height
+    height, width = display.size
 
-#  draw.text((4, 4), "ABCDEF", fill=BLACK, font=font)
-#  draw.rectangle(((1, 1), (50, 100)), fill=BLACK)
+    # canvas to draw to
+    image = Image.new('1', display.size, WHITE)
 
-  # send image to display
-  #pixels = list(image.getdata())
-  #pixary = ['0' if x==0 else '1' for x in list(image.getdata())]
-  #binstr = ''.join(pixary)
-  #print(binstr)
-  bytary = display.imageToPixelArray(image)
-  print(bytary)
-  display.showImageFull(bytary)
+    icon_file = "./images/qrcode-%s.png" % coin
+    if coin == 'btc':
+      xstart, ystart = 14, 14
+    else:
+      xstart, ystart = 0, 0
+    icon = Icon(image, os.path.join(icon_file), xstart=xstart, ystart=ystart)
 
+    # add text beside the icon
+    text = Text(width-128, height, ("Consider a donation in %s" % coin))
+    image.paste(text.image, (0, 128, 128, 296), mask=BLACK)
+
+    # send image to display
+    display.showImageFull(display.imageToPixelArray(image))
+
+    time.sleep(6)
+
+  print("Thank you!")
 
 # main
 if "__main__" == __name__:
