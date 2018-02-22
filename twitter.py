@@ -10,27 +10,23 @@ from includes.epd import Epd
 from includes.text import Text
 import spidev as SPI
 
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 # Twitter authorisation keys
-CONSUMER_KEY    = '3v2MdGra1n3CKZ8iqIvppAwFb'
-CONSUMER_SECRET = 'WuICxwn91MV8maHQP4tFaESe6EFORitw5Nrt5M2LGS0HAr3lx4'
-ACCESS_KEY      = '551285433-Yz94eNQZg0eizYFVSZU1cbaOwwQIBUSTRQlxhth3'
-ACCESS_SECRET   = 'i2fDdKbRieLwoecwHI9Db6IV0DZqB3g41hMNPDHmwdgKJ'
+# please rename .env-example to .env and
+# define the keys and secrets
+CONSUMER_KEY = os.environ.get("CONSUMER_KEY")
+CONSUMER_SECRET = os.environ.get("CONSUMER_SECRET")
+ACCESS_KEY = os.environ.get("ACCESS_KEY")
+ACCESS_SECRET = os.environ.get("ACCESS_SECRET")
 
 WHITE = 1
 BLACK = 0
 DISPLAY_TYPE = 'EPD_2X9'
-
-def main():
-  bus, device = 0, 0
-  spi = SPI.SpiDev(bus, device)
-  display = Epd(spi, DISPLAY_TYPE)
-
-  print('--> Init and clear full screen %s' % display.size)
-  display.clearDisplayPart()
-
-
-
 
 class Twitter(object):
   def __init__(self):
@@ -68,7 +64,7 @@ def main():
 
   while True:
     # Put the Twitter usernames of the news organisations you want to read here
-    twits = ["SPIEGELONLINE", "SkyNews", "BahnAnsagen"]
+    twits = ["SPIEGELONLINE", "SkyNews", "WetterOnline"]
 
     for twit in twits:
       for tweet in t.getTweets(twit):
