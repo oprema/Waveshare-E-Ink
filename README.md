@@ -35,3 +35,7 @@ python3 system -> System infos
 > define the keys and secrets to get the twitter client going   
 
 python3 twitter -> A twitter client to show news and more
+
+<img src="/images/image-1.jpeg" width="650">
+<img src="/images/image-2.jpeg" width="650">
+<img src="/images/image-3.jpeg" width="650">
